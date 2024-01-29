@@ -79,7 +79,8 @@ INSERT INTO games (team1_id, team2_id, season_id, game_date)
 VALUES (1, 5, 1, '2023-02-26'),
        (2, 4, 1, '2023-03-05'),
        (3, 1, 1, '2023-04-09'),
-       (4, 5, 2, '2023-05-17');
+       (4, 5, 2, '2023-05-17'),
+       (1, 2, 2, '2023-05-17');
 
 INSERT INTO goals (game_id, player_id, team_id)
 VALUES (1, 1, 1),
@@ -120,15 +121,21 @@ FROM games g
 WHERE g.id = 1
 GROUP BY g.id, ta.name, tb.name;
 
-SELECT game_date,
-
-       CASE
+SELECT CASE
            WHEN SUM(CASE WHEN g.team_id = games.team1_id THEN 1 ELSE 0 END) >
                 SUM(CASE WHEN g.team_id = games.team2_id THEN 1 ELSE 0 END) THEN games.team1_id
            WHEN SUM(CASE WHEN g.team_id = games.team1_id THEN 1 ELSE 0 END) <
                 SUM(CASE WHEN g.team_id = games.team2_id THEN 1 ELSE 0 END) THEN games.team2_id
-           END
+           END AS winning_team
 FROM games
          LEFT JOIN goals g on games.id = g.game_id
-GROUP BY games.id
+GROUP BY games.id;
 
+SELECT t.id, t.name, (SUM(CASE WHEN g2.team_id = g.team1_id THEN 1 ELSE 0 END) > SUM(CASE WHEN g2.team_id = g.team2_id THEN 1 ELSE 0 END))
+FROM teams t
+JOIN games g ON t.id = g.team1_id
+JOIN goals g2 on g.id = g2.game_id
+
+-- JOIN games g2 ON t.id = g2.team2_id
+WHERE t.id = 1
+GROUP BY g.id, t.id;
